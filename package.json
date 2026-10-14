@@ -1,0 +1,45 @@
+{
+  "name": "wiki-pdf",
+  "version": "1.0.0",
+  "description": "Genera i PDF delle pagine di una wiki GitHub (intestazione, Mermaid, immagini); ogni wiki fornisce solo il proprio wiki.config.json",
+  "keywords": [
+    "github",
+    "wiki",
+    "pdf",
+    "markdown",
+    "mermaid",
+    "puppeteer",
+    "documentation"
+  ],
+  "type": "module",
+  "license": "MIT",
+  "author": "Alessandro Nava (https://github.com/AlessandroNava)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlessandroNava/wiki-pdf.git"
+  },
+  "homepage": "https://github.com/AlessandroNava/wiki-pdf#readme",
+  "bugs": {
+    "url": "https://github.com/AlessandroNava/wiki-pdf/issues"
+  },
+  "bin": {
+    "wiki-pdf": "bin/wiki-pdf.mjs"
+  },
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "wiki.config.schema.json"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "marked": "12.0.2",
+    "marked-gfm-heading-id": "3.1.3",
+    "mermaid": "10.9.1",
+    "puppeteer-core": "22.15.0"
+  }
+}

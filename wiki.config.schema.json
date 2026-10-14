@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/AlessandroNava/wiki-pdf/main/wiki.config.schema.json",
+  "title": "Configurazione wiki-pdf",
+  "description": "Configurazione di una wiki GitHub per il generatore di PDF wiki-pdf.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["wikiUrl"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Percorso di questo schema, per la validazione nell'editor."
+    },
+    "wikiUrl": {
+      "type": "string",
+      "pattern": "^https?://",
+      "description": "Indirizzo della wiki pubblicata. I link interni ./Pagina diventano <wikiUrl>/Pagina nei PDF.",
+      "examples": ["https://github.com/octocat/hello-world/wiki"]
+    },
+    "wikiRoot": {
+      "type": "string",
+      "default": ".",
+      "description": "Cartella della wiki (dove stanno i file .md), relativa al file di configurazione."
+    },
+    "label": {
+      "type": "string",
+      "default": "Wiki",
+      "description": "Etichetta mostrata nell'intestazione e nel piè di pagina di ogni PDF."
+    },
+    "accent": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$",
+      "default": "#e8471c",
+      "description": "Colore principale (bordi, titoli, linea dell'intestazione)."
+    },
+    "accentSoft": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$",
+      "default": "#fff4ef",
+      "description": "Colore tenue per gli sfondi (riquadri, intestazioni delle tabelle)."
+    },
+    "logo": {
+      "type": ["string", "null"],
+      "default": null,
+      "description": "Immagine dell'intestazione, relativa alla cartella della wiki (png, jpg o svg). null = nessun logo."
+    },
+    "linkStyle": {
+      "enum": ["markdown", "html-right"],
+      "default": "markdown",
+      "description": "Forma del link al PDF inserito sotto il titolo di ogni pagina."
+    },
+    "landscapeDiagramMaxHeight": {
+      "type": "string",
+      "pattern": "^\\d+(\\.\\d+)?(mm|cm|in|px|pt)$",
+      "default": "95mm",
+      "description": "Altezza massima degli schemi mermaid nelle pagine landscape."
+    },
+    "exclude": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Pagine (nome del file senza .md) per cui non generare il PDF."
+    },
+    "outDir": {
+      "type": "string",
+      "default": "pdf",
+      "description": "Cartella dei PDF, relativa alla cartella della wiki. Determina anche il percorso nel link al PDF."
+    },
+    "locale": {
+      "type": "string",
+      "default": "it-IT",
+      "description": "Lingua per la data nel piè di pagina e per l'attributo lang della pagina."
+    }
+  }
+}

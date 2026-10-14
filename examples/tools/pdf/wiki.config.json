@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/wiki-pdf/wiki.config.schema.json",
+  "wikiUrl": "https://github.com/<utente>/<repo>/wiki",
+  "wikiRoot": "../..",
+  "label": "Wiki Esempio",
+  "accent": "#0969da",
+  "accentSoft": "#eef5ff",
+  "logo": "images/Logo/logo.png",
+  "linkStyle": "html-right",
+  "landscapeDiagramMaxHeight": "75mm",
+  "exclude": ["Manuals", "PDF-Generation"]
+}

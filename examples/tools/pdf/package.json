@@ -1,0 +1,13 @@
+{
+  "name": "wiki-pdf-local",
+  "private": true,
+  "type": "module",
+  "description": "Generazione dei PDF di questa wiki con wiki-pdf (configurazione in wiki.config.json)",
+  "scripts": {
+    "build": "wiki-pdf build",
+    "check": "wiki-pdf check"
+  },
+  "dependencies": {
+    "wiki-pdf": "github:AlessandroNava/wiki-pdf#v1.0.0"
+  }
+}
