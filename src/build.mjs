@@ -17,6 +17,9 @@ const MERMAID = require.resolve('mermaid/dist/mermaid.min.js');
 
 export const LANDSCAPE_MARKER = '<!-- pdf: landscape -->';
 export const COMPACT_MARKER = '<!-- pdf: compact -->';
+// tema degli schemi Mermaid della singola pagina, al posto di diagramTheme della configurazione
+export const DIAGRAMS_ACCENT_MARKER = '<!-- pdf: diagrams-accent -->';
+export const DIAGRAMS_NEUTRAL_MARKER = '<!-- pdf: diagrams-neutral -->';
 
 // Stili del link al PDF: 'markdown' (riga a sinistra) o 'html-right' (allineato a destra)
 const LINK_STYLES = {
@@ -174,13 +177,23 @@ function ensurePdfLink(wiki, config, name, md) {
     updated = md.slice(0, existing.index) + line + md.slice(existing.index + existing[0].length);
   } else {
     const link = pdfLink(pdfHref(config, name)) + eol + eol;
-    const h1 = md.match(/^(<!--.*-->\r?\n)?# .*\r?\n(\r?\n)?/);
+    // il titolo può essere preceduto da uno o più marcatori (<!-- pdf: ... -->), uno per riga
+    const h1 = md.match(/^(<!--.*-->\r?\n)*# .*\r?\n(\r?\n)?/);
     updated = h1 ? h1[0].trimEnd() + eol + eol + link + md.slice(h1[0].length) : link + md;
   }
   if (updated !== md) fs.writeFileSync(path.join(wiki, `${name}.md`), updated);
   const own = findPdfLink(updated);
   // al posto del link resta una riga vuota, così un `---` o un titolo successivo non si attaccano al paragrafo precedente
   return updated.slice(0, own.index) + eol + updated.slice(own.index + own[0].length);
+}
+
+// Tema degli schemi della pagina: un marcatore diagrams-* prevale su diagramTheme della configurazione.
+// Con entrambi i marcatori vale la configurazione e viene segnalato un avviso.
+function pageDiagramTheme(md, config) {
+  const accent = hasMarker(md, DIAGRAMS_ACCENT_MARKER);
+  const neutral = hasMarker(md, DIAGRAMS_NEUTRAL_MARKER);
+  if (accent && neutral) return { theme: config.diagramTheme, conflict: true };
+  return { theme: accent ? 'accent' : neutral ? 'neutral' : config.diagramTheme, conflict: false };
 }
 
 // Sostituisce i blocchi ```mermaid con i diagrammi e segnala la fine del rendering.
@@ -284,8 +297,11 @@ export async function build(ctx, only = []) {
       const md = ensurePdfLink(wiki, config, name, fs.readFileSync(path.join(wiki, `${name}.md`), 'utf8'));
       const title = pageTitle(name, md, sidebar);
       const landscape = hasMarker(md, LANDSCAPE_MARKER);
+      const diagrams = pageDiagramTheme(md, config);
+      if (diagrams.conflict) warnings.push(`marcatori diagrams-accent e diagrams-neutral insieme: uso diagramTheme "${config.diagramTheme}"`);
       const tmp = path.join(out, `.${name}.html`);
-      const html = toHtml(ctx, title, md, marked, css, logo, landscape, fontCss);
+      const pageCtx = { ...ctx, config: { ...config, diagramTheme: diagrams.theme } };
+      const html = toHtml(pageCtx, title, md, marked, css, logo, landscape, fontCss);
       const date = pageDate(wiki, config, name).toLocaleDateString(config.locale);
       fs.writeFileSync(tmp, await inlineAttachments(html, token));
       try {

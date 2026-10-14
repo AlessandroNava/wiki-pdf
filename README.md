@@ -8,7 +8,7 @@
 
 - 📄 **Un PDF per ogni pagina** della wiki, con intestazione (logo, nome della wiki, titolo della pagina) e piè di pagina (data e numero di pagina).
 - 🔗 **Link "Scarica PDF"** inserito e mantenuto automaticamente in ogni pagina.
-- 📊 **Schemi Mermaid** disegnati nel PDF, anche senza connessione a internet.
+- 📊 **Schemi Mermaid** disegnati nel PDF, anche senza connessione a internet, nei colori della wiki o in grigio (anche pagina per pagina).
 - 🖼️ **Immagini** della wiki incluse, comprese quelle allegate dall'editor web di GitHub nei repository privati.
 - 🔀 **Link tra le pagine** convertiti in link cliccabili alla wiki online, con ancore compatibili con GitHub.
 - ↔️ **Pagine in A4 orizzontale** per flussi e schemi, con lo schema a tutta larghezza.

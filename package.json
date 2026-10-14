@@ -1,6 +1,6 @@
 {
   "name": "wiki-pdf",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Genera i PDF delle pagine di una wiki GitHub (intestazione, Mermaid, immagini); ogni wiki fornisce solo il proprio wiki.config.json",
   "keywords": [
     "github",

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+- Marcatori `<!-- pdf: diagrams-accent -->` e `<!-- pdf: diagrams-neutral -->`: il colore degli schemi Mermaid si sceglie anche pagina per pagina, al posto di `diagramTheme` della configurazione. Con entrambi i marcatori vale la configurazione e compare un avviso.
+- API: esportati `DIAGRAMS_ACCENT_MARKER` e `DIAGRAMS_NEUTRAL_MARKER`.
+- Correzione: il link al PDF viene inserito dopo il titolo anche quando il titolo è preceduto da più marcatori (prima solo da uno).
+
 ## 1.1.0
 
 Grafica dei PDF. Tutte le novità sono attive per default e si possono disattivare dalla configurazione; il numero di pagine delle wiki di prova è invariato rispetto alla 1.0.0.
