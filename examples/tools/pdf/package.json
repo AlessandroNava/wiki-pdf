@@ -8,6 +8,6 @@
     "check": "wiki-pdf check"
   },
   "dependencies": {
-    "wiki-pdf": "github:AlessandroNava/wiki-pdf#v1.0.0"
+    "wiki-pdf": "github:AlessandroNava/wiki-pdf#v1.1.0"
   }
 }

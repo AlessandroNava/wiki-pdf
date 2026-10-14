@@ -15,9 +15,20 @@ export const DEFAULTS = {
   exclude: [],
   outDir: 'pdf',
   locale: 'it-IT',
+  font: 'bundled',
+  callouts: true,
+  diagramTheme: 'accent',
+  dateSource: 'git',
+  outline: true,
 };
 
 const LINK_STYLES = ['markdown', 'html-right'];
+// chiavi con un elenco chiuso di valori
+const CHOICES = {
+  font: ['bundled', 'system'],
+  diagramTheme: ['accent', 'neutral'],
+  dateSource: ['git', 'build'],
+};
 const COLOR_RE = /^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/;
 const LENGTH_RE = /^\d+(\.\d+)?(mm|cm|in|px|pt)$/;
 
@@ -50,6 +61,12 @@ export function loadConfig(configPath) {
   }
   if (raw.exclude !== undefined && !(Array.isArray(raw.exclude) && raw.exclude.every((e) => typeof e === 'string'))) {
     errors.push('"exclude" deve essere un elenco di nomi di pagina');
+  }
+  for (const [key, values] of Object.entries(CHOICES)) {
+    if (raw[key] !== undefined && !values.includes(raw[key])) errors.push(`"${key}" deve essere uno tra: ${values.join(', ')}`);
+  }
+  for (const key of ['callouts', 'outline']) {
+    if (raw[key] !== undefined && typeof raw[key] !== 'boolean') errors.push(`"${key}" deve essere true o false`);
   }
   for (const key of ['wikiRoot', 'label', 'logo', 'outDir', 'locale']) {
     if (raw[key] !== undefined && raw[key] !== null && typeof raw[key] !== 'string') errors.push(`"${key}" deve essere un testo`);

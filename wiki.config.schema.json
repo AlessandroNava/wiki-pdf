@@ -69,7 +69,32 @@
     "locale": {
       "type": "string",
       "default": "it-IT",
-      "description": "Lingua per la data nel piè di pagina e per l'attributo lang della pagina."
+      "description": "Lingua per la data nel piè di pagina, per le etichette dei riquadri e per la sillabazione."
+    },
+    "font": {
+      "enum": ["bundled", "system"],
+      "default": "bundled",
+      "description": "bundled = carattere Inter incluso nel PDF (stesso aspetto su ogni sistema); system = caratteri installati (Segoe UI su Windows)."
+    },
+    "callouts": {
+      "type": "boolean",
+      "default": true,
+      "description": "Colora i riquadri per tipo (nota, suggerimento, importante, attenzione, cautela) in base all'emoji iniziale o alla sintassi GitHub > [!NOTE]."
+    },
+    "diagramTheme": {
+      "enum": ["accent", "neutral"],
+      "default": "accent",
+      "description": "accent = schemi mermaid nei colori della wiki (accent e accentSoft); neutral = tema grigio di mermaid."
+    },
+    "dateSource": {
+      "enum": ["git", "build"],
+      "default": "git",
+      "description": "Data nel piè di pagina: git = ultimo commit della pagina (oggi se ha modifiche non committate); build = data di generazione."
+    },
+    "outline": {
+      "type": "boolean",
+      "default": true,
+      "description": "Aggiunge al PDF i segnalibri dei titoli (indice nel pannello laterale del lettore) e la struttura per l'accessibilità."
     }
   }
 }

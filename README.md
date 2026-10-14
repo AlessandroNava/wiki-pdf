@@ -14,6 +14,10 @@
 - ↔️ **Pagine in A4 orizzontale** per flussi e schemi, con lo schema a tutta larghezza.
 - 📃 **Guide rapide da un foglio**, con avviso se superano una pagina.
 - 🎨 **Aspetto personalizzabile** per ogni wiki: colori, logo, testo dell'intestazione, stile del link.
+- 🔤 **Carattere incluso** (Inter) e sillabazione nella lingua della pagina: stesso aspetto su Windows, Linux e macOS.
+- 🟦 **Riquadri colorati per tipo** (nota, suggerimento, attenzione…), anche con la sintassi GitHub `> [!NOTE]`.
+- 🔖 **Segnalibri e PDF accessibile**: indice dei titoli nel pannello laterale del lettore PDF.
+- 📅 **Data dell'ultima modifica** della pagina nel piè di pagina, presa da Git.
 - ✅ **Controllo dei PDF da aggiornare**: elenca le pagine modificate dopo il loro PDF.
 - 🛡️ **Configurazione verificata** all'avvio, con messaggi chiari in caso di errore.
 - 🤖 **Uso automatico** con GitHub Actions per rigenerare i PDF a ogni modifica della wiki.

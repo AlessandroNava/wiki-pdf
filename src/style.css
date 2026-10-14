@@ -5,21 +5,29 @@
 
 :root {
   --accent: #e8471c;
+  --accent-soft: #fff4ef;
   --text: #1f2328;
   --muted: #59636e;
   --border: #d1d9e0;
   --bg-soft: #f6f8fa;
+  --font-body: "Segoe UI", -apple-system, Helvetica, Arial, sans-serif, "Segoe UI Emoji";
 }
 
 * { box-sizing: border-box; }
 
 body {
-  font-family: "Segoe UI", -apple-system, Helvetica, Arial, sans-serif, "Segoe UI Emoji";
+  font-family: var(--font-body);
   font-size: 10.5pt;
   line-height: 1.55;
   color: var(--text);
   margin: 0;
+  /* sillabazione nella lingua della pagina (attributo lang) */
+  hyphens: auto;
+  -webkit-hyphens: auto;
 }
+
+/* niente righe isolate in cima o in fondo alla pagina */
+p, li, blockquote { orphans: 3; widows: 3; }
 
 .cover {
   display: flex;
@@ -29,11 +37,11 @@ body {
   margin-bottom: 18px;
   border-bottom: 3px solid var(--accent);
 }
-.cover img { width: 44px; height: 44px; }
+.cover img { width: 44px; height: 44px; object-fit: contain; }
 .cover .label { font-size: 9pt; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
-.cover .title { font-size: 18pt; font-weight: 600; }
+.cover .title { font-size: 18pt; font-weight: 600; hyphens: manual; }
 
-h1, h2, h3, h4 { line-height: 1.25; margin: 1.4em 0 .5em; break-after: avoid; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.4em 0 .5em; break-after: avoid; hyphens: manual; }
 h1 { font-size: 17pt; border-bottom: 1px solid var(--border); padding-bottom: .25em; }
 h2 { font-size: 14pt; border-bottom: 1px solid var(--border); padding-bottom: .2em; }
 h3 { font-size: 12pt; }
@@ -48,7 +56,8 @@ li + li { margin-top: .15em; }
 img { max-width: 100%; height: auto; break-inside: avoid; }
 p > img:only-child { display: block; margin: .4em 0; border: 1px solid var(--border); border-radius: 4px; }
 
-table { border-collapse: collapse; width: 100%; break-inside: auto; }
+table { border-collapse: collapse; width: 100%; break-inside: auto; hyphens: manual; }
+thead { display: table-header-group; } /* intestazione ripetuta se la tabella va a pagina nuova */
 tr { break-inside: avoid; }
 th, td { border: 1px solid var(--border); padding: 5px 9px; text-align: left; vertical-align: top; }
 th { background: var(--bg-soft); font-weight: 600; }
@@ -63,12 +72,23 @@ blockquote {
 }
 blockquote p:last-child { margin-bottom: 0; }
 
+/* riquadri per tipo (opzione "callouts"): colori come gli avvisi di GitHub */
+.callout { border-left-color: var(--callout); background: var(--callout-soft); }
+.callout-note      { --callout: #0969da; --callout-soft: #ddf4ff; }
+.callout-tip       { --callout: #1a7f37; --callout-soft: #dafbe1; }
+.callout-important { --callout: #8250df; --callout-soft: #fbefff; }
+.callout-warning   { --callout: #9a6700; --callout-soft: #fff8c5; }
+.callout-caution   { --callout: #d1242f; --callout-soft: #ffebe9; }
+.callout-title { color: var(--callout); }
+.callout-title::after { content: ""; display: block; }
+
 code {
-  font-family: Consolas, "Cascadia Mono", monospace;
+  font-family: Consolas, "Cascadia Mono", "DejaVu Sans Mono", monospace;
   font-size: 9pt;
   background: var(--bg-soft);
   padding: .1em .35em;
   border-radius: 4px;
+  hyphens: none;
 }
 pre {
   background: var(--bg-soft);
@@ -87,29 +107,19 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 1.4em 0; }
 .mermaid svg { max-width: 100%; height: auto; max-height: 110mm; }
 .landscape .mermaid svg { width: 100%; max-width: none !important; max-height: var(--landscape-diagram); }
 
-/* guide rapide: un foglio A4 */
-.compact { font-size: 9.5pt; line-height: 1.4; }
-.compact .cover { margin-bottom: 10px; padding-bottom: 6px; }
-.compact h2 { font-size: 12pt; margin: .9em 0 .35em; }
-.compact h3 { font-size: 10.5pt; margin: .7em 0 .3em; }
-.compact hr { margin: .7em 0; }
-.compact p, .compact ul, .compact ol, .compact table, .compact blockquote { margin-bottom: .5em; }
-.compact th, .compact td { padding: 3px 7px; }
-.compact p[align="center"] { text-align: center; margin: .3em 0 .5em; }
-.compact p[align="center"] img { display: inline-block; vertical-align: middle; border: 1px solid var(--border); border-radius: 3px; margin: 0 4px; }
+/* guide rapide (<!-- pdf: compact -->): un foglio A4 */
 .compact { font-size: 9pt; line-height: 1.35; }
-.compact .cover img { width: 32px; height: 32px; }
-.compact .cover .title { font-size: 15pt; }
-.compact hr { display: none; }
-.compact h2 { margin: .7em 0 .3em; padding-bottom: .1em; }
-.compact li + li { margin-top: 0; }
-.compact blockquote { padding: 4px 10px; }
 .compact .cover { gap: 10px; margin-bottom: 8px; padding-bottom: 4px; border-bottom-width: 2px; }
 .compact .cover img { width: 26px; height: 26px; }
 .compact .cover .label { font-size: 7.5pt; }
 .compact .cover .title { font-size: 13pt; }
-.compact h2 { font-size: 11.5pt; margin: 8px 0 3px; }
+.compact h2 { font-size: 11.5pt; margin: 8px 0 3px; padding-bottom: .1em; }
 .compact h3 { font-size: 10pt; margin: 6px 0 2px; }
+.compact hr { display: none; }
 .compact p, .compact ol, .compact ul { margin: 3px 0; }
 .compact table, .compact blockquote { margin: 5px 0; }
+.compact li + li { margin-top: 0; }
 .compact th, .compact td { padding: 2px 6px; }
+.compact blockquote { padding: 4px 10px; }
+.compact p[align="center"] { text-align: center; margin: .3em 0 .5em; }
+.compact p[align="center"] img { display: inline-block; vertical-align: middle; border: 1px solid var(--border); border-radius: 3px; margin: 0 4px; }

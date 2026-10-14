@@ -36,6 +36,63 @@ export const hasMarker = (md, marker) =>
 
 const SHORTCODES = { ':top:': '⬆️' };
 
+const SYSTEM_FONTS = '"Segoe UI", -apple-system, Helvetica, Arial, sans-serif';
+const EMOJI_FONTS = '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji"';
+
+// Carattere Inter (licenza OFL) incorporato nel PDF: stesso aspetto su Windows, Linux e macOS.
+// Si usano solo i sottoinsiemi latin e latin-ext, regolare e corsivo.
+function bundledFontCss() {
+  const dir = path.dirname(require.resolve('@fontsource-variable/inter/package.json'));
+  const css = ['index.css', 'wght-italic.css'].map((f) => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n');
+  return [...css.matchAll(/\/\* inter-latin(?:-ext)?-wght-(?:normal|italic) \*\/\s*(@font-face \{[\s\S]*?\})/g)]
+    .map((m) => m[1].replace(/url\(\.\/files\/([^)]+)\)/, (_, f) =>
+      `url(data:font/woff2;base64,${fs.readFileSync(path.join(dir, 'files', f)).toString('base64')})`))
+    .join('\n');
+}
+
+// Riquadri colorati per tipo: sintassi GitHub (> [!NOTE]) o emoji iniziale (> ℹ️ **Nota**)
+const CALLOUT_LABELS = {
+  it: { note: 'Nota', tip: 'Suggerimento', important: 'Importante', warning: 'Attenzione', caution: 'Cautela' },
+  en: { note: 'Note', tip: 'Tip', important: 'Important', warning: 'Warning', caution: 'Caution' },
+};
+const CALLOUT_EMOJI = { 'ℹ': 'note', '💡': 'tip', '❗': 'important', '📌': 'important', '⚠': 'warning', '🚧': 'warning', '⛔': 'caution', '🛑': 'caution', '🚫': 'caution' };
+const calloutScript = (lang) => `<script>
+  (() => {
+    const labels = ${JSON.stringify(CALLOUT_LABELS[lang] ?? CALLOUT_LABELS.en)};
+    const emoji = ${JSON.stringify(CALLOUT_EMOJI)};
+    const alertRe = /\\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\\]/i;
+    document.querySelectorAll('main blockquote').forEach((bq) => {
+      const p = bq.querySelector('p');
+      if (!p) return;
+      const text = p.textContent.trimStart();
+      const alert = text.match(alertRe);
+      const type = alert && text.startsWith(alert[0]) ? alert[1].toLowerCase()
+        : Object.entries(emoji).find(([e]) => text.startsWith(e))?.[1];
+      if (!type) return;
+      bq.classList.add('callout', 'callout-' + type);
+      if (alert && text.startsWith(alert[0])) {
+        p.innerHTML = p.innerHTML.replace(alertRe, '<strong class="callout-title">' + labels[type] + '</strong>');
+      }
+    });
+  })();
+</script>`;
+
+// Data nel piè di pagina: ultimo commit della pagina (dateSource "git") oppure data di generazione.
+// Una pagina con modifiche non ancora committate usa la data di oggi.
+function pageDate(wiki, config, name) {
+  const today = new Date();
+  if (config.dateSource !== 'git') return today;
+  try {
+    const file = `${name}.md`;
+    const run = (args) => execSync(`git ${args} -- "${file}"`, { cwd: wiki, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    if (run('status --porcelain')) return today;
+    const iso = run('log -1 --format=%cI');
+    return iso ? new Date(iso) : today;
+  } catch {
+    return today;
+  }
+}
+
 function findChrome() {
   const candidates = [
     process.env.CHROME_PATH,
@@ -126,8 +183,25 @@ function ensurePdfLink(wiki, config, name, md) {
   return updated.slice(0, own.index) + eol + updated.slice(own.index + own[0].length);
 }
 
-// Sostituisce i blocchi ```mermaid con i diagrammi e segnala la fine del rendering
-const MERMAID_SCRIPT = `<script src="${pathToFileURL(MERMAID).href}"></script>
+// Sostituisce i blocchi ```mermaid con i diagrammi e segnala la fine del rendering.
+// Con diagramTheme "accent" gli schemi usano i colori della wiki.
+function mermaidScript(config, fontFamily) {
+  const options = config.diagramTheme === 'accent'
+    ? {
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: config.accentSoft,
+        primaryBorderColor: config.accent,
+        primaryTextColor: '#1f2328',
+        secondaryColor: '#f6f8fa',
+        tertiaryColor: '#ffffff',
+        lineColor: '#59636e',
+        fontFamily,
+      },
+    }
+    : { startOnLoad: false, theme: 'neutral' };
+  return `<script src="${pathToFileURL(MERMAID).href}"></script>
 <script>
   document.querySelectorAll('code.language-mermaid').forEach((code) => {
     const div = document.createElement('div');
@@ -135,11 +209,12 @@ const MERMAID_SCRIPT = `<script src="${pathToFileURL(MERMAID).href}"></script>
     div.textContent = code.textContent;
     code.parentElement.replaceWith(div);
   });
-  mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+  mermaid.initialize(${JSON.stringify(options)});
   mermaid.run().finally(() => { window.mermaidDone = true; });
 </script>`;
+}
 
-function toHtml({ wiki, config }, title, md, marked, css, logo, landscape) {
+function toHtml({ wiki, config }, title, md, marked, css, logo, landscape, fontCss) {
   let src = md;
   for (const [code, emoji] of Object.entries(SHORTCODES)) src = src.split(code).join(emoji);
 
@@ -148,12 +223,15 @@ function toHtml({ wiki, config }, title, md, marked, css, logo, landscape) {
   body = body.replace(/href="\.\/([^"#]*)(#[^"]*)?"/g, (_, page, hash = '') =>
     `href="${config.wikiUrl}${page ? '/' + page : ''}${hash}"`);
 
+  const lang = config.locale.split('-')[0];
+  const fontFamily = `${fontCss ? '"Inter Variable", ' : ''}${SYSTEM_FONTS}, ${EMOJI_FONTS}`;
   const vars = `:root { --accent: ${config.accent}; --accent-soft: ${config.accentSoft};`
-    + ` --landscape-diagram: ${config.landscapeDiagramMaxHeight}; }`;
+    + ` --landscape-diagram: ${config.landscapeDiagramMaxHeight}; --font-body: ${fontFamily}; }`;
+  const hasMermaid = body.includes('class="language-mermaid"');
   return `<!doctype html>
-<html lang="${config.locale.split('-')[0]}"><head><meta charset="utf-8">
+<html lang="${lang}"><head><meta charset="utf-8">
 <base href="${pathToFileURL(wiki + path.sep).href}">
-<title>${title}</title><style>${css}</style><style>${vars}</style>
+<title>${title}</title><style>${fontCss}</style><style>${css}</style><style>${vars}</style>
 ${landscape ? '<style>@page { size: A4 landscape; }</style>' : ''}</head>
 <body class="${landscape ? 'landscape' : ''} ${hasMarker(md, COMPACT_MARKER) ? 'compact' : ''}">
   <header class="cover">
@@ -161,7 +239,8 @@ ${landscape ? '<style>@page { size: A4 landscape; }</style>' : ''}</head>
     <div><div class="label">${config.label}</div><div class="title">${title}</div></div>
   </header>
   <main class="content">${body}</main>
-  ${body.includes('class="language-mermaid"') ? MERMAID_SCRIPT : ''}
+  ${config.callouts ? calloutScript(lang) : ''}
+  ${hasMermaid ? mermaidScript(config, fontFamily) : ''}
 </body></html>`;
 }
 
@@ -189,7 +268,7 @@ export async function build(ctx, only = []) {
     ? `data:image/${path.extname(config.logo).slice(1).replace('jpg', 'jpeg').replace('svg', 'svg+xml')};base64,`
       + fs.readFileSync(path.join(wiki, config.logo)).toString('base64')
     : '';
-  const date = new Date().toLocaleDateString(config.locale);
+  const fontCss = config.font === 'bundled' ? bundledFontCss() : '';
   const token = githubToken();
   fs.mkdirSync(out, { recursive: true });
 
@@ -206,11 +285,13 @@ export async function build(ctx, only = []) {
       const title = pageTitle(name, md, sidebar);
       const landscape = hasMarker(md, LANDSCAPE_MARKER);
       const tmp = path.join(out, `.${name}.html`);
-      const html = toHtml(ctx, title, md, marked, css, logo, landscape);
+      const html = toHtml(ctx, title, md, marked, css, logo, landscape, fontCss);
+      const date = pageDate(wiki, config, name).toLocaleDateString(config.locale);
       fs.writeFileSync(tmp, await inlineAttachments(html, token));
       try {
         await page.goto(pathToFileURL(tmp).href, { waitUntil: 'networkidle0', timeout: 60000 });
-        if (html.includes(MERMAID_SCRIPT)) {
+        await page.evaluate(() => document.fonts.ready);
+        if (html.includes('window.mermaidDone')) {
           await page.waitForFunction('window.mermaidDone === true', { timeout: 30000 });
           const failed = await page.$$eval('.mermaid', (els) => els.filter((e) => !e.querySelector('svg')).length);
           if (failed) warnings.push(`${failed} schema/i mermaid non disegnato/i`);
@@ -225,6 +306,9 @@ export async function build(ctx, only = []) {
           landscape,
           printBackground: true,
           preferCSSPageSize: true,
+          // segnalibri dei titoli nel lettore PDF e struttura per l'accessibilità
+          outline: config.outline,
+          tagged: config.outline,
           displayHeaderFooter: true,
           headerTemplate: '<span></span>',
           footerTemplate: `<div style="width:100%;font-size:8px;color:#59636e;padding:0 16mm;display:flex;justify-content:space-between;font-family:Segoe UI,Arial,sans-serif">
